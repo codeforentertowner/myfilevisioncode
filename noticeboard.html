@@ -1,0 +1,232 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+	<head>
+		<title>FileVision: Noticeboard</title>
+
+		<link rel="stylesheet" type="text/css" href="css/common.css">
+
+		<link rel="stylesheet" type="text/css" href="css/noticeboard.css">
+		<link rel="stylesheet" type="text/css" href="css/calendar.css">
+		
+		<script language="JavaScript" type="text/Javascript" src="api/api.js"></script>
+		<script language="JavaScript" type="text/Javascript" src="api/api_logout.js"></script>
+		<script language="JavaScript" type="text/Javascript" src="api/api_noticeboard.js"></script>
+		
+		<script language="JavaScript" type="text/Javascript" src="common.js"></script>
+		<script language="JavaScript" type="text/JavaScript" src="noticeboard.js"></script>
+		<script language="JavaScript" type="text/JavaScript" src="calendar.js"></script>
+		<script language="VBScript" src="localeDate.vbs"></script>
+
+		<script language="JavaScript">buildWeeklyCalendar(0);</script>
+	</head>
+
+	<body id="FVNoticeboard" onload="init();">
+
+		<div id="Header">
+			<a href="main.html" id="Logo"></a>
+			
+			<div id="HeaderRight">
+				<span id="MessagePicture"></span>
+				<span id="MessageText"></span>
+
+				<span id="LogOut">
+					<a href="#" onClick="logout();">Log out</a>
+				</span>
+			</div>
+		</div>
+		<div id="Top">
+			<div id="TopSpacer">
+			</div>
+
+			<div id="TopMenu">
+				<a href="filing.html">Filing</a>
+				<a href="documentsearch.html">Document Search</a>
+				<a href="documentinput.html">Document Input</a>
+				<a href="noticeboard.html" class="TopSelected">Notice Board</a>
+				<a href="postroom.html">Post Room</a>
+				<a href="audittrail.html">Audit Trail</a>
+				<a href="admin.html">Administration</a>
+				<a href="crm.html">CRM</a>
+				<a href="crmsearch.html">CRM Search</a>
+			</div>
+		</div>
+
+		<div id="Middle">
+			<span id="Left">
+				<div id="LeftMenu">
+				</div>
+			</span>
+			
+			<div id="Center">
+				<div id="InfoSpacer" align="right">
+				<!-- from here is the original html-->
+						<table border="0" cellspacing="0" cellpadding="0">
+							<tr>
+								<td>
+									<input type="radio" id="optUser" name="optUserDept" onclick="updateUserDept()" checked/>
+									<label for="optUser">User</label>
+									<input type="radio" id="optDept" name="optUserDept" onclick="updateUserDept()"/>
+									<label for="optDept">Department</label>
+								</td>
+								<td>
+									<select id="cbxUserDept" style="width:200px" onchange="getInitNotices();"></select>
+								</td>
+							</tr>
+						</table>
+						
+						<fieldset id="tableFilter">
+							<legend>
+								<strong>Notices</strong>
+							</legend>
+
+							<table id='tblNotices' width='100%' border='1' cellspacing='0' cellpadding='0'>
+								<thead style='background-color:#EBEBEB'>
+									<th onMouseOver="cellOver(this);" onMouseOut="cellOut(this);" width="40px" align="center" onclick="sortType()">Type</th>
+									<th onMouseOver='cellOver(this);' onMouseOut='cellOut(this);' align='left' onclick="sortTitle()">Title</th>
+									<th onMouseOver="cellOver(this);" onMouseOut="cellOut(this);" width='100px' align='left' onclick="sortSendingUser()">Sending User</th>
+									<th onMouseOver="cellOver(this);" onMouseOut="cellOut(this);" width='100px' align='left' onclick="sortCreationDate()">Created</th>
+									<th onMouseOver="cellOver(this);" onMouseOut="cellOut(this);" width='60px' align="center" onclick="sortUrgency()">Urgency</th>
+									<th onMouseOver="cellOver(this);" onMouseOut="cellOut(this);" width='100px' align='left' onclick="sortDeadline()">Deadline</th>
+								</thead>
+								<tbody>
+								</tbody>
+							</table>
+
+							<td>
+								<div id="nbButtons" align="center">
+									<input type="button" name="first" id="btnFirst" value="&lt;&lt; First" onclick="btnFirst_click()"/>
+									<input type="button" name="previous" value="&lt; Prev" id="btnPrevious" onclick="btnPrevious_click()" />
+									<input name="next" type="button" id="btnNext" value="Next &gt;"  onclick="btnNext_click()"/>
+									<input type="button" name="last" value="Last &gt;&gt;" id="btnLast" onclick="btnLast_click()" />
+								</div>
+								<div id="pageCount" align="center"></div>
+							</td>
+						</fieldset>
+
+						<fieldset id="options" width="100%">
+							<legend>
+								<strong>Filter Options</strong>
+							</legend>
+							
+							<form id="fmFilter" name="form1" method="post" action="">
+								<table width="100%" border="0">
+									<tr>
+										<td>
+											<input id= "rd1" name="radiobutton" type="radio" value="radiobutton" />
+											Any Date
+										</td>
+										<td>
+											<input id= "rd2" name="radiobutton" type="radio" value="radiobutton" />
+											Created Between
+										</td>
+										<td>
+											<input id= "rd3" name="radiobutton" type="radio" value="radiobutton" />
+											Deadline Between
+										</td>
+										<td>From:</td>
+										<td>
+										  <input type="text"  name="txtStartDate" id="txtStartDate" onClick="w_displayDatePicker('txtStartDate');" size="35" maxlength="80">
+										  <!--<input type="button" value="..." onClick="w_displayDatePicker('txtStartDate');">-->
+										</td>
+										<td>To:</td>
+										<td>
+											<input type="text"  name="txtEndDate" id="txtEndDate" onClick="w_displayDatePicker('txtEndDate');" size="35" maxlength="80">
+											<!--<input type="button" value="..." onClick="w_displayDatePicker('txtEndDate');">-->
+										</td>
+									</tr>
+								</table>
+
+								<table width="100%" border="0">
+									<tr>
+										<td height="28">
+											<img border="0" src="img/nb_doc_ver.gif"/>
+											<input id="ckDocVersion" type="checkbox" name="checkbox" value="checkbox"checked />
+											Document Version
+										</td>
+										<td>
+											<img border="0" src="img/nb_wrk_msg.gif"/>
+											<input id="ckWorkflow" type="checkbox" name="checkbox2" value="checkbox" checked />
+											Workflow
+										</td>
+										<td>
+											<img border="0" src="img/nb_pos_rom.gif"/>
+											<input id="ckPostRoom" type="checkbox" name="checkbox3" value="checkbox" checked />
+											Post Room
+										</td>
+
+										<td>
+											<img border="0" src="img/nb_arc.gif"/>
+											<input id="ckAutoAction" type="checkbox" name="checkbox4" value="checkbox" checked />
+											Automated Actions
+										</td>
+									</tr>
+									<tr>
+										<td>
+											<img border="0" src="img/nb_doc_act.gif"/>
+											<input id="ckDocAction" type="checkbox" name="checkbox5" value="checkbox" checked/>
+											Document Actions
+										</td>
+										<td>
+											<img border="0" src="img/nb_con_act.gif"/>
+											<input id="ckContAction" type="checkbox" name="checkbox6" value="checkbox" checked/>
+											Contact Actions
+										</td>
+										<td>
+											<img border="0" src="img/nb_sec.gif"/>
+											<input id="ckSecurity" type="checkbox" name="checkbox7" value="checkbox" checked/>
+											Security
+										</td>
+										<td>&nbsp;</td>
+									</tr>
+									<tr>
+										<td>
+											<input name="btnSubmitFilter" type="button" value="Submit Filters" onclick="getInitNotices()"/>
+										</td>
+									</tr>
+								</table>
+							</form>
+						</fieldset>
+
+						<fieldset id="operations" width="100%">
+							<legend>
+								<strong>Actions</strong>
+							</legend>
+
+							<table width="100%" border="0" align="right">
+								<tr>
+									<td>
+										<div align="right">
+											<label for="Submit"></label>
+							  
+											<div align="right">
+												<td>
+													<input name="btnMarkForRead" id="btnMarkForRead" type="button"  value="Mark as Unread" onClick="btnMarkForRead_click()"  disabled="disabled"/>          
+													<input name="btnDelete" id="btnDelete" type="button" value="Delete" onClick="btnDelete_click()"/>          
+													<input type="button" onclick="btnClose_click();" value="Close" />
+												</td>
+											</div>
+										</div>
+									</td>
+								</tr>
+							</table>
+						</fieldset>
+				<!-- to here is the original html -->
+
+				</div>
+				<div id="Info">
+					<div id="Version"></div>
+					<div id="User"></div>
+					<div id="Department"></div>
+				</div>
+			</div>
+		</div>
+		
+		<div id="Bottom">
+			<div id="BottomSpacer"></div>
+
+			<div id="Copyright">
+				FileVision &copy; 2006 FileVision USA LLC
+			</div>
+		</div>
+	</body>
+</html>
